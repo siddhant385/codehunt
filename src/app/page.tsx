@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Property } from "@/lib/schema/property.schema";
 import { PropertySearch } from "@/components/property-search";
 import { NewlyLaunched } from "@/components/newly-launched";
 import { redirect } from "next/navigation";
@@ -28,15 +29,22 @@ export default async function HomePage() {
     redirect("/auth/sign-up");
   }
 
+  // Fetch recent properties for Newly Launched section
+  const { data: recentProperties } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("is_active", true)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
   return (
     <div className="flex flex-col items-center">
       {/* Hero Section */}
-<<<<<<< Updated upstream
       <section className="w-full bg-gradient-to-b from-primary/5 to-background py-12 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-5">
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
             AI-Powered Real Estate Intelligence
-=======
       <section className="w-full relative overflow-hidden py-24 sm:py-32 px-4 -mt-24">
         {/* Background image */}
         <Image
@@ -62,7 +70,7 @@ export default async function HomePage() {
             Smarter Real Estate
             <br />
             <span className="text-white/90">Decisions, Faster</span>
->>>>>>> Stashed changes
+
           </h1>
 
           <p className="text-white/80 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
@@ -164,9 +172,6 @@ export default async function HomePage() {
 
       {/* CTA Banner */}
       <section className="w-full max-w-5xl mx-auto py-6 px-4">
-<<<<<<< Updated upstream
-        <NewlyLaunched />
-=======
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/90 to-primary/70 p-8 sm:p-10">
           <div className="absolute inset-0 bg-grid-pattern opacity-10" />
           <div className="relative flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -191,7 +196,9 @@ export default async function HomePage() {
       {/* Newly Launched */}
       <section className="w-full max-w-5xl mx-auto py-6 px-4 pb-16">
         <NewlyLaunched properties={(recentProperties ?? []) as Property[]} />
->>>>>>> Stashed changes
+=======
+        <NewlyLaunched properties={(recentProperties ?? []) as Property[]} />
+>>>>>>> main
       </section>
     </div>
   );

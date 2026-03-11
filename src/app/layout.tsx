@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Navbar from "@/components/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
+import { createClient } from "@/lib/supabase/server";
 import "@/lib/env"; // Validate required env vars at startup
 
 const geistSans = Geist({
@@ -20,17 +22,21 @@ export const metadata: Metadata = {
   description: "Smart property valuations, investment insights, and market analytics powered by AI agents with tool-calling.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const profileButtonLabel = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Profile";
+  const userEmail = user?.email;
+
   return (
-<<<<<<< Updated upstream
     <html lang="en">
 
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`  ${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50`}
       >
         <Navbar
           companyName="CodeHunt"
@@ -44,11 +50,6 @@ export default function RootLayout({
         />
         {children}
         <Toaster richColors position="top-right" />
-=======
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -72,7 +73,6 @@ export default function RootLayout({
           </main>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
->>>>>>> Stashed changes
       </body>
     </html>
   );
