@@ -40,11 +40,8 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col items-center">
-      {/* Hero Section */}
-      <section className="w-full bg-gradient-to-b from-primary/5 to-background py-12 px-4">
-        <div className="max-w-4xl mx-auto text-center space-y-5">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-            AI-Powered Real Estate Intelligence
+
+
       <section className="w-full relative overflow-hidden py-24 sm:py-32 px-4 -mt-24">
         {/* Background image */}
         <Image
@@ -196,9 +193,6 @@ export default async function HomePage() {
       {/* Newly Launched */}
       <section className="w-full max-w-5xl mx-auto py-6 px-4 pb-16">
         <NewlyLaunched properties={(recentProperties ?? []) as Property[]} />
-=======
-        <NewlyLaunched properties={(recentProperties ?? []) as Property[]} />
->>>>>>> main
       </section>
     </div>
   );

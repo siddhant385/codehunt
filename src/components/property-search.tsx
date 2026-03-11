@@ -2,23 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-<<<<<<< Updated upstream
-import { Search, Mic, ChevronDown } from "lucide-react";
-import Link from "next/link";
-
-const tabs = [
-    { label: "Apartment", id: "buy" },
-    { label: "Villa", id: "rent" },
-    { label: "House", id: "new-launch", dot: true },
-    { label: "Plot", id: "commercial" },
-    { label: "Commercial", id: "plots-land" },
-];
-
-=======
 import { Search, ArrowRight } from "lucide-react";
 import Link from "next/link";
-
->>>>>>> Stashed changes
 const propertyTypes = [
     { label: "All", value: "" },
     { label: "Apartment", value: "apartment" },
@@ -56,37 +41,11 @@ export function PropertySearch() {
                         {t.label}
                     </button>
                 ))}
-<<<<<<< Updated upstream
-
-                {/* Spacer + divider + Post Property */}
-                <div className="ml-auto flex items-center flex-shrink-0">
-                    <div className="w-px h-5 bg-gray-200 mx-2" />
-                    <Link href={"/properties/new"} >
-                        <button className="flex items-center gap-1.5 px-3 py-2 text-[13.5px] font-semibold text-[#003b6f] bg-transparent border-0 cursor-pointer whitespace-nowrap">
-                            Post Property
-                        </button>
-                    </Link>
-                </div>
-            </div>
-
-            {/* ── Search Row ── */}
-            <div className="flex items-center gap-2 px-3 py-2.5 relative">
-
-
-                {/* Vertical divider */}
-                <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
-
-                {/* Search icon */}
-                <Search size={18} className="text-gray-400 flex-shrink-0 ml-1" />
-
-                {/* Search input */}
-=======
             </div>
 
             {/* Search Bar */}
             <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-2.5 shadow-sm focus-within:border-primary/40 focus-within:shadow-md focus-within:shadow-primary/5 transition-all duration-200">
                 <Search size={18} className="text-muted-foreground flex-shrink-0" />
->>>>>>> Stashed changes
                 <input
                     type="text"
                     value={query}

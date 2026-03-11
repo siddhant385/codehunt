@@ -109,7 +109,7 @@ export default async function AgentDetailPage({ params }: Props) {
         Placed at the back, opacity controlled by the Globe component
       */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 flex items-center justify-center">
-        <Globe opacity={0.25} />
+        <Globe opacity={0.45} />
       </div>
 
       {/* 

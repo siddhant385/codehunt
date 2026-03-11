@@ -33,23 +33,11 @@ export default async function RootLayout({
   const userEmail = user?.email;
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
 
       <body
         className={`  ${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50`}
       >
-        <Navbar
-          companyName="CodeHunt"
-          links={[
-            { label: 'Home', href: '/' },
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: 'Properties', href: '/properties' },
-            { label: 'AI Agents', href: '/agents' },
-          ]}
-          profileButtonLabel="Profile"
-        />
-        {children}
-        <Toaster richColors position="top-right" />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
