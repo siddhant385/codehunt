@@ -11,6 +11,7 @@ import {
   Zap,
   ArrowRight,
   MapPin,
+  Sparkles,
 } from "lucide-react";
 
 const agents = [
@@ -21,9 +22,9 @@ const agents = [
       "AI-powered property valuation using market comparables, location analytics, and historical trends to give you an accurate fair-market estimate.",
     icon: TrendingUp,
     status: "ready" as const,
-    accent: "chart-1",
-    bgClass: "bg-chart-1/10",
-    iconClass: "text-chart-1",
+    iconBg: "bg-chart-1/10",
+    iconColor: "text-chart-1",
+    glowColor: "hover:shadow-chart-1/10",
   },
   {
     id: "investment-advisory",
@@ -32,9 +33,9 @@ const agents = [
       "Get personalized investment recommendations based on your risk tolerance, budget, and market conditions. Optimized for long-term portfolio growth.",
     icon: BarChart3,
     status: "ready" as const,
-    accent: "chart-2",
-    bgClass: "bg-chart-2/10",
-    iconClass: "text-chart-2",
+    iconBg: "bg-chart-2/10",
+    iconColor: "text-chart-2",
+    glowColor: "hover:shadow-chart-2/10",
   },
   {
     id: "offer-risk",
@@ -43,9 +44,9 @@ const agents = [
       "Analyze buyer and seller credibility, transaction history, and market volatility to assess the risk level of any property offer.",
     icon: ShieldAlert,
     status: "ready" as const,
-    accent: "chart-3",
-    bgClass: "bg-chart-3/10",
-    iconClass: "text-chart-3",
+    iconBg: "bg-chart-3/10",
+    iconColor: "text-chart-3",
+    glowColor: "hover:shadow-chart-3/10",
   },
   {
     id: "market-intelligence",
@@ -54,9 +55,9 @@ const agents = [
       "Real-time market trends, price movements, demand-supply metrics, and micro-market insights for informed decision-making.",
     icon: PieChart,
     status: "ready" as const,
-    accent: "chart-4",
-    bgClass: "bg-chart-4/10",
-    iconClass: "text-chart-4",
+    iconBg: "bg-chart-4/10",
+    iconColor: "text-chart-4",
+    glowColor: "hover:shadow-chart-4/10",
   },
   {
     id: "portfolio-optimization",
@@ -65,9 +66,9 @@ const agents = [
       "Maximize returns across your real estate portfolio with AI-driven rebalancing suggestions, diversification analysis, and exit timing.",
     icon: Zap,
     status: "ready" as const,
-    accent: "chart-5",
-    bgClass: "bg-chart-5/10",
-    iconClass: "text-chart-5",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+    glowColor: "hover:shadow-primary/10",
   },
   {
     id: "fraud-anomaly",
@@ -76,9 +77,9 @@ const agents = [
       "Detect suspicious listings, price manipulation, fake documents, and anomalous transaction patterns using advanced ML models.",
     icon: AlertTriangle,
     status: "ready" as const,
-    accent: "destructive",
-    bgClass: "bg-destructive/10",
-    iconClass: "text-destructive",
+    iconBg: "bg-chart-5/10",
+    iconColor: "text-chart-5",
+    glowColor: "hover:shadow-chart-5/10",
   },
   {
     id: "neighbourhood-analysis",
@@ -87,9 +88,9 @@ const agents = [
       "Comprehensive locality insights: nearby properties, amenities, connectivity, price trends, news, and livability scores for any area.",
     icon: MapPin,
     status: "ready" as const,
-    accent: "chart-3",
-    bgClass: "bg-chart-3/10",
-    iconClass: "text-chart-3",
+    iconBg: "bg-chart-2/10",
+    iconColor: "text-chart-2",
+    glowColor: "hover:shadow-chart-2/10",
   },
 ];
 
@@ -105,8 +106,8 @@ export default async function AgentsPage() {
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-chart-2/20 flex items-center justify-center">
               <Bot size={22} className="text-primary" />
             </div>
             <div>
@@ -127,24 +128,23 @@ export default async function AgentsPage() {
             return (
               <div
                 key={agent.id}
-                className="group relative bg-card rounded-xl border border-border p-5 flex flex-col gap-4 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                className={`group relative bg-card rounded-xl border border-border p-5 flex flex-col gap-4 card-hover hover:shadow-lg ${agent.glowColor}`}
               >
                 {/* Status badge */}
                 <span
-                  className={`absolute top-4 right-4 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                    isReady
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-muted text-muted-foreground"
-                  }`}
+                  className={`absolute top-4 right-4 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isReady
+                    ? "bg-chart-2/10 text-chart-2"
+                    : "bg-muted text-muted-foreground"
+                    }`}
                 >
                   {isReady ? "Ready" : "Coming Soon"}
                 </span>
 
                 {/* Icon */}
                 <div
-                  className={`w-12 h-12 rounded-xl ${agent.bgClass} flex items-center justify-center`}
+                  className={`w-12 h-12 rounded-xl ${agent.iconBg} flex items-center justify-center group-hover:scale-105 transition-transform`}
                 >
-                  <Icon size={24} className={agent.iconClass} />
+                  <Icon size={24} className={agent.iconColor} />
                 </div>
 
                 {/* Text */}
@@ -161,9 +161,9 @@ export default async function AgentsPage() {
                 {isReady ? (
                   <Link
                     href={`/agents/${agent.id}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline mt-auto"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 mt-auto transition-colors"
                   >
-                    Launch Agent <ArrowRight size={14} />
+                    Launch Agent <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground mt-auto cursor-default">
@@ -176,9 +176,11 @@ export default async function AgentsPage() {
         </div>
 
         {/* Info Banner */}
-        <div className="bg-muted/50 rounded-xl border border-border p-5">
+        <div className="bg-card rounded-xl border border-border p-5">
           <div className="flex items-start gap-3">
-            <Bot size={20} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Sparkles size={16} className="text-primary" />
+            </div>
             <div>
               <p className="text-sm font-medium text-foreground">
                 How do these agents work?

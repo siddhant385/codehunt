@@ -32,7 +32,6 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Fetch my properties
   const { data: myProperties } = await supabase
     .from("properties")
     .select("*")
@@ -40,7 +39,6 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
   const properties = (myProperties ?? []) as Property[];
 
-  // Fetch all offers on my properties
   const propertyIds = properties.map((p) => p.id);
   let receivedOffers: (Offer & { property_title?: string })[] = [];
   if (propertyIds.length > 0) {
@@ -55,7 +53,6 @@ export default async function DashboardPage() {
     }));
   }
 
-  // Fetch offers I've made as a buyer
   const { data: myOffers } = await supabase
     .from("offers")
     .select("*")
@@ -63,7 +60,6 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
   const sentOffers = (myOffers ?? []) as Offer[];
 
-  // Stats
   const totalPortfolioValue = properties.reduce(
     (sum, p) => sum + (Number(p.asking_price) || 0),
     0
@@ -71,6 +67,14 @@ export default async function DashboardPage() {
   const activeListings = properties.filter((p) => p.status === "active").length;
   const pendingReceivedOffers = receivedOffers.filter((o) => o.status === "pending").length;
   const pendingSentOffers = sentOffers.filter((o) => o.status === "pending").length;
+
+  const typeEmoji: Record<string, string> = {
+    apartment: "🏢",
+    villa: "🏡",
+    plot: "🌳",
+    commercial: "🏪",
+    independent_house: "🏠",
+  };
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
@@ -84,9 +88,9 @@ export default async function DashboardPage() {
               Manage your properties, offers, and valuations
             </p>
           </div>
-          <Button asChild>
+          <Button asChild className="rounded-xl shadow-sm shadow-primary/20">
             <Link href="/properties/new">
-              <Plus size={16} className="mr-2" /> List Property
+              <Plus size={15} className="mr-1.5" /> List Property
             </Link>
           </Button>
         </div>
@@ -98,45 +102,45 @@ export default async function DashboardPage() {
             label="My Listings"
             value={properties.length.toString()}
             sub={`${activeListings} active`}
+            accent="chart-1"
           />
           <StatCard
             icon={<IndianRupee size={18} className="text-chart-2" />}
             label="Portfolio Value"
             value={`₹${formatCompact(totalPortfolioValue)}`}
             sub="Total asking"
+            accent="chart-2"
           />
           <StatCard
-            icon={<TrendingUp size={18} className="text-chart-4" />}
+            icon={<TrendingUp size={18} className="text-chart-3" />}
             label="Offers Received"
             value={receivedOffers.length.toString()}
             sub={`${pendingReceivedOffers} pending`}
+            accent="chart-3"
           />
           <StatCard
-            icon={<BarChart3 size={18} className="text-chart-5" />}
+            icon={<BarChart3 size={18} className="text-chart-4" />}
             label="My Offers"
             value={sentOffers.length.toString()}
             sub={`${pendingSentOffers} pending`}
+            accent="chart-4"
           />
         </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Property Type Distribution</h3>
+          <ChartCard title="Property Type Distribution">
             <PropertyTypeChart properties={properties} />
-          </div>
-          <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Offer Status Breakdown</h3>
+          </ChartCard>
+          <ChartCard title="Offer Status Breakdown">
             <OfferStatusChart offers={[...receivedOffers, ...sentOffers]} />
-          </div>
-          <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Portfolio Value by Property</h3>
+          </ChartCard>
+          <ChartCard title="Portfolio Value by Property">
             <PortfolioValueChart properties={properties} />
-          </div>
-          <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Offer Activity (Last 7 Days)</h3>
+          </ChartCard>
+          <ChartCard title="Offer Activity (Last 7 Days)">
             <OfferActivityChart offers={[...receivedOffers, ...sentOffers]} />
-          </div>
+          </ChartCard>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -150,12 +154,12 @@ export default async function DashboardPage() {
             </div>
 
             {properties.length === 0 ? (
-              <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-8 text-center shadow-sm">
+              <div className="bg-card rounded-xl border border-border p-8 text-center">
                 <Building2 size={32} className="text-muted-foreground mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground mb-3">
                   You haven&apos;t listed any properties yet
                 </p>
-                <Button asChild size="sm">
+                <Button asChild size="sm" className="rounded-xl">
                   <Link href="/properties/new">
                     <Plus size={14} className="mr-1.5" /> List Your First Property
                   </Link>
@@ -167,24 +171,15 @@ export default async function DashboardPage() {
                   const offerCount = receivedOffers.filter(
                     (o) => o.property_id === p.id
                   ).length;
+                  const emoji = typeEmoji[p.property_type ?? ""] ?? "🏠";
                   return (
                     <Link
                       key={p.id}
                       href={`/properties/${p.id}`}
-                      className="group flex items-center gap-4 bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30"
+                      className="group flex items-center gap-4 bg-card rounded-xl border border-border p-4 card-hover"
                     >
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/10 to-accent flex items-center justify-center flex-shrink-0">
-                        <span className="text-xl">
-                          {p.property_type === "apartment"
-                            ? "🏢"
-                            : p.property_type === "villa"
-                              ? "🏡"
-                              : p.property_type === "plot"
-                                ? "🌳"
-                                : p.property_type === "commercial"
-                                  ? "🏪"
-                                  : "🏠"}
-                        </span>
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-chart-2/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xl">{emoji}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
@@ -204,16 +199,16 @@ export default async function DashboardPage() {
                         <div className="flex items-center gap-2">
                           <span
                             className={`text-[10px] font-medium px-2 py-0.5 rounded-full capitalize ${p.status === "active"
-                              ? "bg-green-100 text-green-700"
-                              : p.status === "sold"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-muted text-muted-foreground"
+                                ? "bg-chart-2/10 text-chart-2"
+                                : p.status === "sold"
+                                  ? "bg-primary/10 text-primary"
+                                  : "bg-muted text-muted-foreground"
                               }`}
                           >
                             {p.status}
                           </span>
                           {offerCount > 0 && (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-chart-3/10 text-chart-3">
                               {offerCount} offer{offerCount > 1 && "s"}
                             </span>
                           )}
@@ -226,10 +221,10 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* Sidebar: Recent offers + quick links */}
+          {/* Sidebar */}
           <div className="space-y-4">
             {/* Recent Received Offers */}
-            <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
+            <div className="bg-card rounded-xl border border-border p-4">
               <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center justify-between">
                 Recent Offers Received
                 {receivedOffers.length > 0 && (
@@ -245,7 +240,7 @@ export default async function DashboardPage() {
                   {receivedOffers.slice(0, 5).map((o) => (
                     <div
                       key={o.id}
-                      className="flex items-center justify-between py-2 border-b border-border last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                     >
                       <div className="min-w-0">
                         <p className="text-xs font-medium text-foreground truncate">
@@ -264,7 +259,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* My Sent Offers */}
-            <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
+            <div className="bg-card rounded-xl border border-border p-4">
               <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center justify-between">
                 My Offers Sent
                 {sentOffers.length > 0 && (
@@ -280,7 +275,7 @@ export default async function DashboardPage() {
                   {sentOffers.slice(0, 5).map((o) => (
                     <div
                       key={o.id}
-                      className="flex items-center justify-between py-2 border-b border-border last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                     >
                       <div className="min-w-0">
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -299,9 +294,9 @@ export default async function DashboardPage() {
             </div>
 
             {/* Quick Links */}
-            <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-4 space-y-2 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
+            <div className="bg-card rounded-xl border border-border p-4 space-y-1">
               <h3 className="text-sm font-semibold text-foreground mb-2">Quick Links</h3>
-              <QuickLink href="/dashboard/portfolio" icon={<TrendingUp size={14} />} label="My AI Portfolio" />
+              <QuickLink href="/dashboard/portfolio" icon={<TrendingUp size={14} />} label="AI Portfolio" />
               <QuickLink href="/agents" icon={<Bot size={14} />} label="AI Agents" />
               <QuickLink href="/properties" icon={<Eye size={14} />} label="Browse Properties" />
               <QuickLink href="/search" icon={<BarChart3 size={14} />} label="Search Properties" />
@@ -321,16 +316,18 @@ function StatCard({
   label,
   value,
   sub,
+  accent,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   sub: string;
+  accent: string;
 }) {
   return (
-    <div className="bg-[#E3EDF6] dark:bg-slate-900 rounded-xl border border-border/50 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-8 h-8 rounded-lg bg-white/50 dark:bg-white/10 flex items-center justify-center">{icon}</div>
+    <div className="bg-card rounded-xl border border-border p-4 card-hover">
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className={`w-8 h-8 rounded-lg bg-${accent}/10 flex items-center justify-center`}>{icon}</div>
       </div>
       <p className="text-xl font-bold text-foreground">{value}</p>
       <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
@@ -339,11 +336,20 @@ function StatCard({
   );
 }
 
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-card rounded-xl border border-border p-5 card-hover">
+      <h3 className="text-sm font-semibold text-foreground mb-4">{title}</h3>
+      {children}
+    </div>
+  );
+}
+
 function OfferStatusBadge({ status }: { status: string }) {
   const config: Record<string, { icon: React.ReactNode; cls: string }> = {
-    pending: { icon: <Clock size={10} />, cls: "bg-amber-100 text-amber-700" },
-    accepted: { icon: <CheckCircle2 size={10} />, cls: "bg-green-100 text-green-700" },
-    rejected: { icon: <XCircle size={10} />, cls: "bg-red-100 text-red-700" },
+    pending: { icon: <Clock size={10} />, cls: "bg-chart-3/10 text-chart-3" },
+    accepted: { icon: <CheckCircle2 size={10} />, cls: "bg-chart-2/10 text-chart-2" },
+    rejected: { icon: <XCircle size={10} />, cls: "bg-chart-5/10 text-chart-5" },
   };
   const c = config[status] ?? config.pending;
   return (
@@ -357,11 +363,11 @@ function QuickLink({ href, icon, label }: { href: string; icon: React.ReactNode;
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+      className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all py-2 px-2 rounded-lg"
     >
       {icon}
       {label}
-      <ArrowRight size={12} className="ml-auto" />
+      <ArrowRight size={12} className="ml-auto opacity-0 group-hover:opacity-100" />
     </Link>
   );
 }

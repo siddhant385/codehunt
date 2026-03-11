@@ -141,12 +141,12 @@ export function AgentChat({ agentId, agentName, placeholder }: AgentChatProps) {
           prev.map((m) =>
             m.taskId === taskId
               ? {
-                  ...m,
-                  content: response,
-                  toolsUsed,
-                  status: status as "completed" | "failed",
-                  timestamp: new Date(),
-                }
+                ...m,
+                content: response,
+                toolsUsed,
+                status: status as "completed" | "failed",
+                timestamp: new Date(),
+              }
               : m
           )
         );
@@ -232,18 +232,18 @@ export function AgentChat({ agentId, agentName, placeholder }: AgentChatProps) {
   return (
     <>
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 relative z-10 w-full">
         <div className="max-w-3xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Bot size={32} className="text-primary" />
+              <div className="w-16 h-16 rounded-2xl bg-primary/15 backdrop-blur-md border border-primary/20 flex items-center justify-center">
+                <Bot size={32} className="text-primary drop-shadow-md" />
               </div>
-              <div className="text-center space-y-1.5">
+              <div className="text-center space-y-1.5 bg-background/40 backdrop-blur-sm p-4 rounded-2xl border border-border/30">
                 <h3 className="text-base font-semibold text-foreground">
                   {agentName}
                 </h3>
-                <p className="text-sm text-muted-foreground max-w-md">
+                <p className="text-sm text-foreground/80 max-w-md">
                   This agent runs as a <strong>background task</strong> using
                   real-time database tools. Responses arrive via live updates.
                 </p>
@@ -308,9 +308,8 @@ export function AgentChat({ agentId, agentName, placeholder }: AgentChatProps) {
           {messages.map((msg) => (
             <div key={msg.id} className="space-y-1">
               <div
-                className={`flex gap-3 ${
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.role === "assistant" && (
                   <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -318,15 +317,14 @@ export function AgentChat({ agentId, agentName, placeholder }: AgentChatProps) {
                   </div>
                 )}
                 <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-muted text-foreground rounded-bl-md"
-                  }`}
+                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-br-md"
+                    : "bg-muted text-foreground rounded-bl-md"
+                    }`}
                 >
                   {/* Pending / Processing state */}
                   {msg.role === "assistant" &&
-                  (msg.status === "pending" || msg.status === "processing") ? (
+                    (msg.status === "pending" || msg.status === "processing") ? (
                     <div className="flex items-center gap-3 py-1">
                       <Loader2
                         size={16}
@@ -390,13 +388,13 @@ export function AgentChat({ agentId, agentName, placeholder }: AgentChatProps) {
       </div>
 
       {/* Input */}
-      <div className="border-t border-border bg-card px-4 py-3">
+      <div className="border-t border-border/50 bg-background/40 backdrop-blur-md px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center gap-2">
           {messages.length > 0 && (
             <button
               onClick={handleClearChat}
               title="Clear chat"
-              className="w-10 h-10 rounded-xl bg-muted/50 text-muted-foreground flex items-center justify-center hover:bg-muted transition-colors"
+              className="w-10 h-10 rounded-xl bg-muted/60 text-muted-foreground flex items-center justify-center hover:bg-muted transition-colors backdrop-blur-sm"
             >
               <RotateCcw size={14} />
             </button>
@@ -410,12 +408,12 @@ export function AgentChat({ agentId, agentName, placeholder }: AgentChatProps) {
               e.key === "Enter" && !e.shiftKey && handleSend()
             }
             placeholder={placeholder}
-            className="flex-1 bg-muted/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring transition-shadow"
+            className="flex-1 bg-muted/60 backdrop-blur-sm border border-border/50 rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring transition-shadow"
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 disabled:opacity-40 transition-all"
+            className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 disabled:opacity-40 transition-all backdrop-blur-sm shadow-sm"
           >
             <Send size={16} />
           </button>

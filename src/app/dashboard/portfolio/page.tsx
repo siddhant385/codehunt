@@ -51,32 +51,32 @@ function riskColor(risk: string | null) {
   switch (risk?.toUpperCase()) {
     case "CONSERVATIVE":
     case "LOW":
-      return "text-emerald-600 bg-emerald-50 border-emerald-200";
+      return "text-chart-2 bg-chart-2/10 border-chart-2/20";
     case "MODERATE":
     case "BALANCED":
-      return "text-amber-600 bg-amber-50 border-amber-200";
+      return "text-chart-3 bg-chart-3/10 border-chart-3/20";
     case "AGGRESSIVE":
     case "HIGH":
     case "VERY HIGH":
-      return "text-rose-600 bg-rose-50 border-rose-200";
+      return "text-chart-5 bg-chart-5/10 border-chart-5/20";
     default:
-      return "text-gray-600 bg-gray-50 border-gray-200";
+      return "text-muted-foreground bg-muted border-border";
   }
 }
 
 function healthColor(health: string | null) {
   switch (health?.toUpperCase()) {
     case "EXCELLENT":
-      return "text-emerald-700";
+      return "text-chart-2";
     case "GOOD":
-      return "text-blue-700";
+      return "text-chart-1";
     case "FAIR":
-      return "text-amber-700";
+      return "text-chart-3";
     case "NEEDS_ATTENTION":
     case "NEEDS ATTENTION":
-      return "text-rose-700";
+      return "text-chart-5";
     default:
-      return "text-gray-700";
+      return "text-muted-foreground";
   }
 }
 
@@ -99,7 +99,6 @@ export default async function PortfolioPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Fetch portfolio + assets
   const { data: portfolioRow } = await supabase
     .from("portfolios")
     .select("*")
@@ -120,7 +119,6 @@ export default async function PortfolioPage() {
     assets = (assetRows ?? []) as Asset[];
   }
 
-  // Parse ai_analysis JSON if present
   const analysis = portfolio?.ai_analysis as Record<string, unknown> | null;
   const recommendations = (analysis?.recommendations as Array<{
     title: string;
@@ -137,8 +135,7 @@ export default async function PortfolioPage() {
   const hasPending = !portfolio || portfolio.status === "pending";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Realtime subscription — invisible, triggers router.refresh() when status → ready/failed */}
+    <div className="min-h-screen bg-background">
       <PortfolioRealtimeListener
         portfolioId={portfolio?.id ?? null}
         userId={user.id}
@@ -150,11 +147,13 @@ export default async function PortfolioPage() {
         {/* ── Header ── */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="w-8 h-8 text-indigo-600" />
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl bg-chart-1/10 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-chart-1" />
+              </div>
               AI Portfolio
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-muted-foreground mt-1.5 text-sm">
               Powered by Gemini · auto-generated after each property listing
             </p>
           </div>
@@ -162,7 +161,7 @@ export default async function PortfolioPage() {
             <Button
               type="submit"
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 rounded-xl"
               disabled={isGenerating}
             >
               <RefreshCw className={`w-4 h-4 ${isGenerating ? "animate-spin" : ""}`} />
@@ -177,12 +176,12 @@ export default async function PortfolioPage() {
         )}
 
         {isFailed && (
-          <Card className="border-rose-200 bg-rose-50">
+          <Card className="border-destructive/30 bg-destructive/5">
             <CardContent className="flex items-center gap-3 py-6">
-              <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
               <div>
-                <p className="font-medium text-rose-800">Portfolio generation failed</p>
-                <p className="text-sm text-rose-600 mt-0.5">
+                <p className="font-medium text-destructive">Portfolio generation failed</p>
+                <p className="text-sm text-destructive/70 mt-0.5">
                   Click Regenerate to try again.
                 </p>
               </div>
@@ -195,37 +194,37 @@ export default async function PortfolioPage() {
           <>
             {/* Summary row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
+              <Card className="card-hover">
                 <CardContent className="py-4">
-                  <p className="text-xs text-gray-500 mb-1">Total Invested</p>
-                  <p className="text-xl font-bold text-gray-900">
+                  <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
+                  <p className="text-xl font-bold text-foreground">
                     {fmt(portfolio.total_invested ?? (analysis?.total_invested as number))}
                   </p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="card-hover">
                 <CardContent className="py-4">
-                  <p className="text-xs text-gray-500 mb-1">Projected Value</p>
-                  <p className="text-xl font-bold text-emerald-700">
+                  <p className="text-xs text-muted-foreground mb-1">Projected Value</p>
+                  <p className="text-xl font-bold text-chart-2">
                     {fmt(portfolio.projected_value ?? (analysis?.projected_value as number))}
                   </p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="card-hover">
                 <CardContent className="py-4">
-                  <p className="text-xs text-gray-500 mb-1">Projected ROI</p>
-                  <p className="text-xl font-bold text-indigo-700">
+                  <p className="text-xs text-muted-foreground mb-1">Projected ROI</p>
+                  <p className="text-xl font-bold text-chart-1">
                     {portfolio.projected_roi != null
                       ? `${Number(portfolio.projected_roi).toFixed(1)}%`
                       : (analysis?.projected_roi as number) != null
-                      ? `${Number(analysis!.projected_roi).toFixed(1)}%`
-                      : "—"}
+                        ? `${Number(analysis!.projected_roi).toFixed(1)}%`
+                        : "—"}
                   </p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="card-hover">
                 <CardContent className="py-4">
-                  <p className="text-xs text-gray-500 mb-1">Overall Health</p>
+                  <p className="text-xs text-muted-foreground mb-1">Overall Health</p>
                   <p className={`text-lg font-bold ${healthColor(analysis?.overall_health as string)}`}>
                     {(analysis?.overall_health as string) ?? "—"}
                   </p>
@@ -235,16 +234,16 @@ export default async function PortfolioPage() {
 
             {/* AI Summary */}
             {portfolio.ai_summary && (
-              <Card className="border-indigo-100">
+              <Card className="border-chart-1/20 bg-chart-1/[0.03]">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2 text-indigo-700">
+                  <CardTitle className="text-base flex items-center gap-2 text-chart-1">
                     <Sparkles className="w-4 h-4" /> AI Summary
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700 leading-relaxed">{portfolio.ai_summary}</p>
+                  <p className="text-foreground/80 leading-relaxed">{portfolio.ai_summary}</p>
                   {portfolio.last_generated_at && (
-                    <p className="text-xs text-gray-400 mt-3">
+                    <p className="text-xs text-muted-foreground mt-3">
                       Last updated:{" "}
                       {new Date(portfolio.last_generated_at).toLocaleString("en-IN")}
                     </p>
@@ -263,7 +262,7 @@ export default async function PortfolioPage() {
                   </span>
                 )}
                 {!!analysis?.diversification_score && (
-                  <span className="px-3 py-1.5 rounded-full text-sm font-medium border text-indigo-700 bg-indigo-50 border-indigo-200">
+                  <span className="px-3 py-1.5 rounded-full text-sm font-medium border text-chart-1 bg-chart-1/10 border-chart-1/20">
                     <Target className="inline w-3.5 h-3.5 mr-1" />
                     Diversification Score: {Number(analysis.diversification_score)}/10
                   </span>
@@ -275,17 +274,17 @@ export default async function PortfolioPage() {
             {(strengths.length > 0 || weaknesses.length > 0) && (
               <div className="grid md:grid-cols-2 gap-4">
                 {strengths.length > 0 && (
-                  <Card className="border-emerald-200">
+                  <Card className="border-chart-2/20">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm text-emerald-700 flex items-center gap-2">
+                      <CardTitle className="text-sm text-chart-2 flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4" /> Strengths
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-1.5">
                         {strengths.map((s, i) => (
-                          <li key={i} className="text-sm text-gray-700 flex gap-2">
-                            <span className="text-emerald-500 mt-0.5">✓</span>
+                          <li key={i} className="text-sm text-foreground/80 flex gap-2">
+                            <span className="text-chart-2 mt-0.5 flex-shrink-0">✓</span>
                             {s}
                           </li>
                         ))}
@@ -294,17 +293,17 @@ export default async function PortfolioPage() {
                   </Card>
                 )}
                 {weaknesses.length > 0 && (
-                  <Card className="border-amber-200">
+                  <Card className="border-chart-3/20">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm text-amber-700 flex items-center gap-2">
+                      <CardTitle className="text-sm text-chart-3 flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" /> Weaknesses
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-1.5">
                         {weaknesses.map((w, i) => (
-                          <li key={i} className="text-sm text-gray-700 flex gap-2">
-                            <span className="text-amber-500 mt-0.5">!</span>
+                          <li key={i} className="text-sm text-foreground/80 flex gap-2">
+                            <span className="text-chart-3 mt-0.5 flex-shrink-0">!</span>
                             {w}
                           </li>
                         ))}
@@ -320,27 +319,26 @@ export default async function PortfolioPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-indigo-600" /> AI Recommendations
+                    <TrendingUp className="w-4 h-4 text-chart-1" /> AI Recommendations
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {recommendations.map((rec, i) => (
-                      <div key={i} className="flex gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                      <div key={i} className="flex gap-3 p-3 rounded-xl bg-muted/30 border border-border">
                         <div
-                          className={`mt-0.5 shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full h-fit ${
-                            rec.priority === "HIGH"
-                              ? "bg-rose-100 text-rose-700"
+                          className={`mt-0.5 shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full h-fit ${rec.priority === "HIGH"
+                              ? "bg-chart-5/10 text-chart-5"
                               : rec.priority === "MEDIUM"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
+                                ? "bg-chart-3/10 text-chart-3"
+                                : "bg-muted text-muted-foreground"
+                            }`}
                         >
                           {rec.priority}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-800 text-sm">{rec.title}</p>
-                          <p className="text-gray-500 text-sm mt-0.5">{rec.description}</p>
+                          <p className="font-medium text-foreground text-sm">{rec.title}</p>
+                          <p className="text-muted-foreground text-sm mt-0.5">{rec.description}</p>
                         </div>
                       </div>
                     ))}
@@ -351,12 +349,12 @@ export default async function PortfolioPage() {
 
             {/* Market Outlook */}
             {analysis?.market_outlook && (
-              <Card className="border-blue-100 bg-blue-50/40">
+              <Card className="border-chart-1/15 bg-chart-1/[0.03]">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-blue-700">Market Outlook</CardTitle>
+                  <CardTitle className="text-sm text-chart-1">Market Outlook</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700 text-sm leading-relaxed">
+                  <p className="text-foreground/80 text-sm leading-relaxed">
                     {analysis.market_outlook as string}
                   </p>
                 </CardContent>
@@ -368,49 +366,48 @@ export default async function PortfolioPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-gray-600" /> Portfolio Assets
+                    <Building2 className="w-4 h-4 text-muted-foreground" /> Portfolio Assets
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-gray-100 text-left">
-                          <th className="px-4 py-3 font-medium text-gray-500">Asset</th>
-                          <th className="px-4 py-3 font-medium text-gray-500">Purchase Value</th>
-                          <th className="px-4 py-3 font-medium text-gray-500">Current Value</th>
-                          <th className="px-4 py-3 font-medium text-gray-500">ROI Est.</th>
-                          <th className="px-4 py-3 font-medium text-gray-500">Risk</th>
+                        <tr className="border-b border-border text-left">
+                          <th className="px-4 py-3 font-medium text-muted-foreground">Asset</th>
+                          <th className="px-4 py-3 font-medium text-muted-foreground">Purchase Value</th>
+                          <th className="px-4 py-3 font-medium text-muted-foreground">Current Value</th>
+                          <th className="px-4 py-3 font-medium text-muted-foreground">ROI Est.</th>
+                          <th className="px-4 py-3 font-medium text-muted-foreground">Risk</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50">
+                      <tbody className="divide-y divide-border/50">
                         {assets.map((asset) => (
-                          <tr key={asset.id} className="hover:bg-gray-50/60 transition-colors">
+                          <tr key={asset.id} className="hover:bg-muted/30 transition-colors">
                             <td className="px-4 py-3">
-                              <p className="font-medium text-gray-800">{asset.asset_name}</p>
+                              <p className="font-medium text-foreground">{asset.asset_name}</p>
                               {asset.ai_notes && (
-                                <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                                   {asset.ai_notes}
                                 </p>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-gray-700">{fmt(asset.purchase_value)}</td>
-                            <td className="px-4 py-3 text-gray-700">{fmt(asset.current_value)}</td>
+                            <td className="px-4 py-3 text-foreground/80">{fmt(asset.purchase_value)}</td>
+                            <td className="px-4 py-3 text-foreground/80">{fmt(asset.current_value)}</td>
                             <td className="px-4 py-3">
                               {asset.roi_estimate != null ? (
                                 <span
-                                  className={`font-semibold ${
-                                    asset.roi_estimate >= 10
-                                      ? "text-emerald-600"
+                                  className={`font-semibold ${asset.roi_estimate >= 10
+                                      ? "text-chart-2"
                                       : asset.roi_estimate >= 0
-                                      ? "text-blue-600"
-                                      : "text-rose-600"
-                                  }`}
+                                        ? "text-chart-1"
+                                        : "text-chart-5"
+                                    }`}
                                 >
                                   {asset.roi_estimate.toFixed(1)}%
                                 </span>
                               ) : (
-                                <span className="text-gray-400">—</span>
+                                <span className="text-muted-foreground">—</span>
                               )}
                             </td>
                             <td className="px-4 py-3">
@@ -419,7 +416,7 @@ export default async function PortfolioPage() {
                                   {asset.risk_level}
                                 </span>
                               ) : (
-                                <span className="text-gray-400">—</span>
+                                <span className="text-muted-foreground">—</span>
                               )}
                             </td>
                           </tr>
@@ -436,7 +433,7 @@ export default async function PortfolioPage() {
         {/* Back link */}
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowRight className="w-3.5 h-3.5 rotate-180" /> Back to Dashboard
         </Link>

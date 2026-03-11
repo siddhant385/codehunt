@@ -45,18 +45,18 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Navbar
-            companyName="Investify Ai"
+            companyName="CodeHunt"
             links={[
               { label: 'Home', href: '/' },
-              { label: 'Dashboard', href: '/dashboard' },
               { label: 'Properties', href: '/properties' },
+              { label: 'Dashboard', href: '/dashboard' },
               { label: 'AI Agents', href: '/agents' },
             ]}
             profileButtonLabel={profileButtonLabel}
             userEmail={userEmail}
             isLoggedIn={!!user}
           />
-          <main className="pt-30  bg-background min-h-screen">
+          <main className="pt-24 bg-background min-h-screen">
             {children}
           </main>
           <Toaster richColors position="top-right" />
