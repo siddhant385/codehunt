@@ -12,6 +12,14 @@ import {
 } from "lucide-react";
 import type { Offer } from "@/lib/schema/property.schema";
 
+const typeEmoji: Record<string, string> = {
+  apartment: "🏢",
+  villa: "🏡",
+  plot: "🌳",
+  commercial: "🏪",
+  independent_house: "🏠",
+};
+
 export default async function MyOffersPage() {
   const supabase = await createClient();
   const {
@@ -19,7 +27,6 @@ export default async function MyOffersPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Get offers I've sent + join property title
   const { data } = await supabase
     .from("offers")
     .select("*, properties(title, property_type, city, state, asking_price)")
@@ -68,7 +75,7 @@ export default async function MyOffersPage() {
           <div className="space-y-6">
             {pending.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-amber-700 uppercase tracking-wide mb-3">
+                <h2 className="text-xs font-semibold text-chart-3 uppercase tracking-wider mb-3">
                   Pending ({pending.length})
                 </h2>
                 <OfferList offers={pending} />
@@ -76,7 +83,7 @@ export default async function MyOffersPage() {
             )}
             {others.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Past ({others.length})
                 </h2>
                 <OfferList offers={others} />
@@ -106,50 +113,59 @@ function OfferList({
     <div className="space-y-3">
       {offers.map((o) => {
         const prop = o.properties;
+        const emoji = typeEmoji[prop?.property_type ?? ""] ?? "🏠";
+        const statusConfig: Record<string, string> = {
+          pending: "border-l-chart-3",
+          accepted: "border-l-chart-2",
+          rejected: "border-l-chart-5",
+        };
+        const borderClass = statusConfig[o.status] ?? "border-l-border";
+
         return (
-        <div
+          <div
             key={o.id}
-            className="bg-card rounded-xl border border-border p-4 hover:shadow-md transition-shadow"
+            className={`bg-card rounded-xl border border-border border-l-[3px] ${borderClass} p-4 card-hover`}
           >
             <div className="flex items-center gap-4">
-            <Link href={`/properties/${o.property_id}`} className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-accent flex items-center justify-center flex-shrink-0">
-              <span className="text-lg">
-                {prop?.property_type === "apartment" ? "🏢" : prop?.property_type === "villa" ? "🏡" : prop?.property_type === "plot" ? "🌳" : prop?.property_type === "commercial" ? "🏪" : "🏠"}
-              </span>
-            </Link>
-            <div className="flex-1 min-w-0">
-              <Link href={`/properties/${o.property_id}`} className="text-sm font-semibold text-foreground truncate block hover:text-primary transition-colors">
-                {prop?.title ?? "Property"}
+              <Link
+                href={`/properties/${o.property_id}`}
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-chart-2/10 flex items-center justify-center flex-shrink-0 hover:ring-2 ring-primary/20 transition-all"
+              >
+                <span className="text-lg">{emoji}</span>
               </Link>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {prop?.city}, {prop?.state}
-              </p>
-              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                <Clock size={11} />
-                {new Date(o.created_at).toLocaleDateString("en-IN", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-            <div className="text-right flex-shrink-0 space-y-1">
-              <p className="text-sm font-bold text-foreground flex items-center justify-end gap-0.5">
-                <IndianRupee size={12} />
-                {Number(o.offer_price).toLocaleString("en-IN")}
-              </p>
-              {prop?.asking_price && (
-                <p className="text-[10px] text-muted-foreground">
-                  Asking: ₹{Number(prop.asking_price).toLocaleString("en-IN")}
+              <div className="flex-1 min-w-0">
+                <Link href={`/properties/${o.property_id}`} className="text-sm font-semibold text-foreground truncate block hover:text-primary transition-colors">
+                  {prop?.title ?? "Property"}
+                </Link>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {prop?.city}, {prop?.state}
                 </p>
-              )}
-              <StatusBadge status={o.status} />
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <Clock size={11} />
+                  {new Date(o.created_at).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+              <div className="text-right flex-shrink-0 space-y-1">
+                <p className="text-sm font-bold text-foreground flex items-center justify-end gap-0.5">
+                  <IndianRupee size={12} />
+                  {Number(o.offer_price).toLocaleString("en-IN")}
+                </p>
+                {prop?.asking_price && (
+                  <p className="text-[10px] text-muted-foreground">
+                    Asking: ₹{Number(prop.asking_price).toLocaleString("en-IN")}
+                  </p>
+                )}
+                <StatusBadge status={o.status} />
+              </div>
             </div>
-          </div>
             <div className="flex items-center gap-3 mt-3 pt-2 border-t border-border/50">
               <Link
                 href={`/offers/${o.id}`}
-                className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                className="inline-flex items-center gap-1 text-xs text-chart-1 hover:text-chart-1/80 font-medium transition-colors"
               >
                 <Sparkles size={11} /> View AI Analysis
               </Link>
@@ -163,9 +179,9 @@ function OfferList({
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { icon: React.ReactNode; cls: string }> = {
-    pending: { icon: <Clock size={10} />, cls: "bg-amber-100 text-amber-700" },
-    accepted: { icon: <CheckCircle2 size={10} />, cls: "bg-green-100 text-green-700" },
-    rejected: { icon: <XCircle size={10} />, cls: "bg-red-100 text-red-700" },
+    pending: { icon: <Clock size={10} />, cls: "bg-chart-3/10 text-chart-3" },
+    accepted: { icon: <CheckCircle2 size={10} />, cls: "bg-chart-2/10 text-chart-2" },
+    rejected: { icon: <XCircle size={10} />, cls: "bg-chart-5/10 text-chart-5" },
   };
   const c = cfg[status] ?? cfg.pending;
   return (

@@ -25,6 +25,15 @@ import { RealtimeValuationListener, RealtimeOfferListener, RealtimeContextListen
 import type { Property, PropertyImage } from "@/lib/schema/property.schema";
 import type { Offer, Valuation } from "@/lib/schema/property.schema";
 import Image from "next/image";
+import { getPropertyFallbackImage } from "@/lib/property-images";
+
+const typeEmoji: Record<string, string> = {
+  apartment: "🏢",
+  villa: "🏡",
+  plot: "🌳",
+  commercial: "🏪",
+  independent_house: "🏠",
+};
 
 interface Props {
   params: Promise<{ propertyId: string }>;
@@ -50,7 +59,6 @@ export default async function PropertyDetailPage({ params }: Props) {
   const p = property as Property;
   const isOwner = user.id === p.owner_id;
 
-  // Fetch offers if owner (include buyer profiles)
   let offers: (Offer & { buyer_name?: string; buyer_phone?: string })[] = [];
   if (isOwner) {
     const { data } = await supabase
@@ -65,7 +73,6 @@ export default async function PropertyDetailPage({ params }: Props) {
     }));
   }
 
-  // Fetch owner profile (name + phone)
   let ownerName = "Unknown";
   let ownerPhone: string | null = null;
   if (p.owner_id) {
@@ -78,7 +85,6 @@ export default async function PropertyDetailPage({ params }: Props) {
     ownerPhone = ownerProfile?.phone ?? null;
   }
 
-  // Fetch latest AI valuation
   const { data: latestValuation } = await supabase
     .from("ai_property_valuations")
     .select("*")
@@ -88,7 +94,6 @@ export default async function PropertyDetailPage({ params }: Props) {
     .maybeSingle();
   const valuation = (latestValuation ?? null) as Valuation | null;
 
-  // Fetch property context (neighbourhood data)
   const { data: propertyContext } = await supabase
     .from("property_context")
     .select("*")
@@ -97,7 +102,6 @@ export default async function PropertyDetailPage({ params }: Props) {
     .limit(1)
     .maybeSingle();
 
-  // Fetch investment insights for this property's owner
   const { data: investmentInsight } = await supabase
     .from("ai_investment_insights")
     .select("*")
@@ -106,7 +110,6 @@ export default async function PropertyDetailPage({ params }: Props) {
     .limit(1)
     .maybeSingle();
 
-  // Fetch property images
   const { data: propertyImages } = await supabase
     .from("property_images")
     .select("*")
@@ -115,15 +118,17 @@ export default async function PropertyDetailPage({ params }: Props) {
   const images = (propertyImages ?? []) as PropertyImage[];
   const coverImage = images.find((img) => img.is_cover) ?? images[0] ?? null;
 
+  const emoji = typeEmoji[p.property_type ?? ""] ?? "🏠";
+
   return (
     <div className="min-h-screen bg-background py-8 px-4">
-      {/* Supabase Realtime Listeners */}
+      {/* Supabase Realtime */}
       <RealtimeValuationListener propertyId={p.id} />
       <RealtimeContextListener propertyId={p.id} />
       <RealtimeInsightsListener userId={user.id} />
       {isOwner && <RealtimeOfferListener propertyId={p.id} />}
 
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6">
         {/* Back */}
         <Link
           href="/properties"
@@ -137,29 +142,20 @@ export default async function PropertyDetailPage({ params }: Props) {
           <div className="lg:col-span-2 space-y-6">
             {/* Cover Image / Fallback */}
             {coverImage ? (
-              <div className="relative h-56 sm:h-72 rounded-xl overflow-hidden border border-border">
+              <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden border border-border shadow-sm">
                 <Image
-                  src={coverImage.image_url}
+                  src={getPropertyFallbackImage(p.property_type, p.id)}
                   alt={p.title}
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 66vw"
                   priority
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               </div>
             ) : (
-              <div className="h-56 sm:h-72 bg-gradient-to-br from-primary/10 to-accent rounded-xl border border-border flex items-center justify-center">
-                <span className="text-6xl">
-                  {p.property_type === "apartment"
-                    ? "🏢"
-                    : p.property_type === "villa"
-                    ? "🏡"
-                    : p.property_type === "plot"
-                    ? "🌳"
-                    : p.property_type === "commercial"
-                    ? "🏪"
-                    : "🏠"}
-                </span>
+              <div className="h-64 sm:h-80 bg-gradient-to-br from-primary/10 via-accent/5 to-chart-2/10 rounded-2xl border border-border flex items-center justify-center shadow-sm">
+                <span className="text-7xl">{emoji}</span>
               </div>
             )}
 
@@ -178,14 +174,19 @@ export default async function PropertyDetailPage({ params }: Props) {
                 <span className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground capitalize">
                   {p.property_type?.replace("_", " ")}
                 </span>
-                <span className="inline-block text-xs font-medium px-2.5 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
+                <span className={`inline-block text-xs font-medium px-2.5 py-0.5 rounded-full capitalize ${p.status === "active"
+                  ? "bg-chart-2/10 text-chart-2"
+                  : p.status === "sold"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-muted text-muted-foreground"
+                  }`}>
                   {p.status}
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 {p.title}
               </h1>
-              <p className="flex items-center gap-1.5 text-muted-foreground mt-1">
+              <p className="flex items-center gap-1.5 text-muted-foreground mt-1.5">
                 <MapPin size={15} />
                 {p.address}, {p.city}, {p.state}
               </p>
@@ -202,7 +203,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             {/* Description */}
             {p.description && (
               <div className="bg-card rounded-xl border border-border p-5">
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                   Description
                 </h2>
                 <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
@@ -214,7 +215,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             {/* Offers (owner only) */}
             {isOwner && (
               <div className="bg-card rounded-xl border border-border p-5">
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Offers Received ({offers.length})
                 </h2>
                 {offers.length === 0 ? (
@@ -224,18 +225,18 @@ export default async function PropertyDetailPage({ params }: Props) {
                     {offers.map((offer) => (
                       <div
                         key={offer.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border gap-3"
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border gap-3"
                       >
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1 pr-2">
                           <p className="text-sm font-semibold text-foreground flex items-center gap-1">
-                            <IndianRupee size={13} />
-                            {Number(offer.offer_price).toLocaleString("en-IN")}
+                            <IndianRupee size={13} className="shrink-0" />
+                            <span className="truncate">{Number(offer.offer_price).toLocaleString("en-IN")}</span>
                           </p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                            <Clock size={11} />
-                            {new Date(offer.created_at).toLocaleDateString("en-IN")}
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 min-w-0">
+                            <Clock size={11} className="shrink-0" />
+                            <span className="shrink-0">{new Date(offer.created_at).toLocaleDateString("en-IN")}</span>
                             {offer.buyer_name && (
-                              <span className="ml-1">· {offer.buyer_name}</span>
+                              <span className="ml-1 truncate">· {offer.buyer_name}</span>
                             )}
                           </p>
                         </div>
@@ -269,8 +270,8 @@ export default async function PropertyDetailPage({ params }: Props) {
           {/* Sidebar */}
           <div className="space-y-4">
             {/* Price Card */}
-            <div className="bg-card rounded-xl border border-border p-5 sticky top-24">
-              <p className="text-sm text-muted-foreground mb-1">Asking Price</p>
+            <div className="bg-card rounded-xl border border-border p-5 sticky top-24 shadow-sm">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Asking Price</p>
               <p className="flex items-center gap-0.5 text-3xl font-bold text-foreground">
                 <IndianRupee size={24} />
                 {p.asking_price
@@ -286,9 +287,9 @@ export default async function PropertyDetailPage({ params }: Props) {
               <div className="border-t border-border my-4" />
 
               {/* Owner info */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User size={14} className="text-primary" />
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-chart-2/20 flex items-center justify-center">
+                  <User size={15} className="text-primary" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">{ownerName}</p>
@@ -321,8 +322,8 @@ export default async function PropertyDetailPage({ params }: Props) {
                 <>
                   <div className="border-t border-border my-4" />
                   <PropertyStatusManager propertyId={p.id} currentStatus={p.status ?? "draft"} />
-                  <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground mt-4">
-                    <Home size={13} className="inline mr-1" />
+                  <div className="bg-muted/30 rounded-lg p-3 text-xs text-muted-foreground mt-4 flex items-start gap-1.5">
+                    <Home size={13} className="mt-0.5 flex-shrink-0" />
                     This is your property listing. Offers will appear above.
                   </div>
                 </>
@@ -338,10 +339,10 @@ export default async function PropertyDetailPage({ params }: Props) {
 /* ── Spec Card ────────────────────────────────────────────────────────── */
 function SpecCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-card rounded-lg border border-border p-3 text-center">
-      <div className="flex justify-center text-muted-foreground mb-1">{icon}</div>
+    <div className="bg-card rounded-xl border border-border p-3.5 text-center card-hover">
+      <div className="flex justify-center text-muted-foreground mb-1.5">{icon}</div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-semibold text-foreground">{value}</p>
+      <p className="text-sm font-semibold text-foreground mt-0.5">{value}</p>
     </div>
   );
 }

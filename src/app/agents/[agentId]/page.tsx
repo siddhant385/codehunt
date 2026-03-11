@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Bot, ArrowLeft, MessageSquare, Send } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { AgentChat } from "@/components/agents/agent-chat";
+import dynamic from "next/dynamic";
+
+const Globe = dynamic(() => import("@/components/ui/globe"));
 
 const agentInfo: Record<
   string,
@@ -100,30 +103,53 @@ export default async function AgentDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="border-b border-border bg-card px-4 py-3">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <Link
-            href="/agents"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft size={18} />
-          </Link>
-          <span className="text-2xl">{agent.emoji}</span>
-          <div className="flex-1">
-            <h1 className="text-sm font-semibold text-foreground">{agent.name}</h1>
-            <p className="text-xs text-muted-foreground">{agent.description}</p>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            Online
-          </div>
-        </div>
+    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
+      {/* 
+        Layer 1: Globe Background
+        Placed at the back, opacity controlled by the Globe component
+      */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 flex items-center justify-center">
+        <Globe opacity={0.25} />
       </div>
 
-      {/* Chat Area */}
-      <AgentChat agentId={agentId} agentName={agent.name} placeholder={agent.placeholder} />
+      {/* 
+        Layer 2: Gradient Overlays 
+        Helps text remain readable and gives depth
+      */}
+      <div className="absolute inset-0 pointer-events-none z-10 bg-gradient-to-t from-background via-background/80 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none z-10 bg-gradient-to-t from-background to-transparent" />
+
+      {/* 
+        Layer 3: Main Interface (Header + Chat)
+        Positioned relative to sit above the absolute background layers
+      */}
+      <div className="relative z-20 flex flex-col flex-1 h-full">
+        {/* Header */}
+        <div className="border-b border-border/50 bg-background/40 backdrop-blur-md px-4 py-3">
+          <div className="max-w-3xl mx-auto flex items-center gap-3">
+            <Link
+              href="/agents"
+              className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-muted/50"
+            >
+              <ArrowLeft size={18} />
+            </Link>
+            <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/15 flex items-center justify-center backdrop-blur-sm">
+              <span className="text-xl">{agent.emoji}</span>
+            </div>
+            <div className="flex-1 min-w-0 pr-2">
+              <h1 className="text-sm font-semibold text-foreground truncate">{agent.name}</h1>
+              <p className="text-xs text-muted-foreground truncate">{agent.description}</p>
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-chart-2 bg-chart-2/10 px-2.5 py-1 rounded-full backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-chart-2 animate-pulse" />
+              Online
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Area */}
+        <AgentChat agentId={agentId} agentName={agent.name} placeholder={agent.placeholder} />
+      </div>
     </div>
   );
 }

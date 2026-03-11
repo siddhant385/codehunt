@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+<<<<<<< Updated upstream
 import { Search, Mic, ChevronDown } from "lucide-react";
 
 const tabs = [
@@ -13,57 +14,49 @@ const tabs = [
     { label: "Projects", id: "projects" },
 ];
 
+=======
+import { Search, ArrowRight } from "lucide-react";
+import Link from "next/link";
+
+>>>>>>> Stashed changes
 const propertyTypes = [
-    "All Residential",
-    "Apartment",
-    "Independent House",
-    "Villa",
-    "Plot",
-    "Commercial",
+    { label: "All", value: "" },
+    { label: "Apartment", value: "apartment" },
+    { label: "Villa", value: "villa" },
+    { label: "House", value: "independent_house" },
+    { label: "Plot", value: "plot" },
+    { label: "Commercial", value: "commercial" },
 ];
 
 export function PropertySearch() {
-    const [activeTab, setActiveTab] = useState("buy");
     const [query, setQuery] = useState("");
-    const [propertyType, setPropertyType] = useState("All Residential");
-    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [activeType, setActiveType] = useState("");
     const router = useRouter();
 
     const handleSearch = () => {
         const params = new URLSearchParams();
         if (query.trim()) params.set("q", query.trim());
-        if (propertyType !== "All Residential") params.set("type", propertyType.toLowerCase().replace(" ", "_"));
+        if (activeType) params.set("type", activeType);
         router.push(`/search?${params.toString()}`);
     };
 
     return (
-        <div className="w-full max-w-[860px] bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.10)] overflow-visible font-sans">
-            {/* ── Tab Row ── */}
-            <div className="flex items-center px-2 border-b border-gray-200 overflow-x-auto">
-                {tabs.map((tab) => (
+        <div className="w-full max-w-2xl space-y-3">
+            {/* Type Pills */}
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                {propertyTypes.map((t) => (
                     <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={[
-                            "relative flex items-center gap-1 px-4 py-3.5 text-sm whitespace-nowrap border-0 bg-transparent cursor-pointer transition-colors",
-                            activeTab === tab.id
-                                ? "text-[#003b6f] font-bold"
-                                : "text-gray-500 font-medium hover:text-[#003b6f]",
-                        ].join(" ")}
-                        style={
-                            activeTab === tab.id
-                                ? {
-                                    boxShadow: "inset 0 -3px 0 0 #003b6f",
-                                }
-                                : {}
-                        }
+                        key={t.value}
+                        onClick={() => setActiveType(t.value)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 cursor-pointer ${activeType === t.value
+                                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                            }`}
                     >
-                        {tab.label}
-                        {tab.dot && (
-                            <span className="absolute top-2.5 right-1 w-1.5 h-1.5 rounded-full bg-red-500" />
-                        )}
+                        {t.label}
                     </button>
                 ))}
+<<<<<<< Updated upstream
 
                 {/* Spacer + divider + Post Property */}
                 <div className="ml-auto flex items-center flex-shrink-0">
@@ -120,30 +113,37 @@ export function PropertySearch() {
                 <Search size={18} className="text-gray-400 flex-shrink-0 ml-1" />
 
                 {/* Search input */}
+=======
+            </div>
+
+            {/* Search Bar */}
+            <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-2.5 shadow-sm focus-within:border-primary/40 focus-within:shadow-md focus-within:shadow-primary/5 transition-all duration-200">
+                <Search size={18} className="text-muted-foreground flex-shrink-0" />
+>>>>>>> Stashed changes
                 <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    placeholder="Search for locality, landmark, project, or builder"
-                    className="flex-1 border-0 outline-none text-sm text-gray-800 bg-transparent px-1 py-1.5 placeholder:text-gray-400 min-w-0"
+                    placeholder="Search by locality, landmark, or project..."
+                    className="flex-1 border-0 outline-none text-sm text-foreground bg-transparent placeholder:text-muted-foreground min-w-0"
                 />
-
-                {/* Mic button */}
-                <button
-                    aria-label="Voice search"
-                    className="flex items-center justify-center w-9 h-9 rounded-full bg-transparent border-0 cursor-pointer text-blue-500 hover:bg-blue-50 transition-colors flex-shrink-0"
-                >
-                    <Mic size={18} />
-                </button>
-
-                {/* Search button */}
                 <button
                     onClick={handleSearch}
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg border-0 cursor-pointer transition-colors flex-shrink-0"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold rounded-lg transition-colors flex-shrink-0 shadow-sm"
                 >
-                    Search
+                    Search <ArrowRight size={14} />
                 </button>
+            </div>
+
+            {/* Quick Link */}
+            <div className="flex justify-center">
+                <Link
+                    href="/properties/new"
+                    className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                    Or <span className="font-medium underline underline-offset-2">list your property</span> →
+                </Link>
             </div>
         </div>
     );

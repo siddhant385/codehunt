@@ -26,6 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+<<<<<<< Updated upstream
     <html lang="en">
 
       <body
@@ -43,6 +44,35 @@ export default function RootLayout({
         />
         {children}
         <Toaster richColors position="top-right" />
+=======
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navbar
+            companyName="CodeHunt"
+            links={[
+              { label: 'Home', href: '/' },
+              { label: 'Properties', href: '/properties' },
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'AI Agents', href: '/agents' },
+            ]}
+            profileButtonLabel={profileButtonLabel}
+            userEmail={userEmail}
+            isLoggedIn={!!user}
+          />
+          <main className="pt-24 bg-background min-h-screen">
+            {children}
+          </main>
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
+>>>>>>> Stashed changes
       </body>
     </html>
   );
