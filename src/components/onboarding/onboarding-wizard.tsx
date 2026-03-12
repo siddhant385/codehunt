@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   User,
@@ -86,7 +85,6 @@ function StepIndicator({ current }: { current: number }) {
 /* ── Main onboarding wizard ───────────────────────────────────────────── */
 
 export function OnboardingWizard({ profile }: { profile: Profile }) {
-  const router = useRouter();
   const [step, setStep] = useState(profile.onboarding_step ?? 0);
   const [loading, setLoading] = useState(false);
 
@@ -147,8 +145,9 @@ export function OnboardingWizard({ profile }: { profile: Profile }) {
       return;
     }
     toast.success("Welcome aboard! Your profile is all set.");
-    router.push("/");
-    router.refresh();
+    // Hard navigation — bypasses Next.js router cache so home page
+    // re-fetches fresh profile with onboarding_completed = true
+    window.location.href = "/";
   }
 
   return (
@@ -157,7 +156,7 @@ export function OnboardingWizard({ profile }: { profile: Profile }) {
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome to CodeHunt
+            Welcome to Estator
           </h1>
           <p className="text-gray-500 mt-1">
             Let&apos;s set up your profile in a few quick steps
@@ -308,7 +307,7 @@ export function OnboardingWizard({ profile }: { profile: Profile }) {
                 <Button
                   className="flex-1"
                   onClick={handleStep2}
-                  disabled={loading || !budget}
+                  disabled={loading}
                 >
                   {loading ? (
                     <Loader2 size={16} className="animate-spin mr-2" />

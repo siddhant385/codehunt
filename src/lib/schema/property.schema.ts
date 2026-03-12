@@ -86,6 +86,7 @@ export const OfferSchema = z.object({
   property_id: z.string().uuid().nullable(),
   buyer_id: z.string().uuid().nullable(),
   offer_price: z.number(),
+  counter_price: z.number().nullable(),
   status: z.string(),
   ai_risk_score: z.number().nullable(),
   ai_recommendation: z.string().nullable(),
@@ -102,6 +103,8 @@ export const PropertyImageSchema = z.object({
   storage_path: z.string(),
   display_order: z.number(),
   is_cover: z.boolean(),
+  ai_processed_url: z.string().nullable().optional(),
+  ai_applied_effect: z.any().nullable().optional(),
   created_at: z.string(),
 });
 export type PropertyImage = z.infer<typeof PropertyImageSchema>;
